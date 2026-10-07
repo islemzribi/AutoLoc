@@ -1,5 +1,6 @@
 package tn.esprit.autoloc.domain;
-
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,4 +30,13 @@ public class Contrat {
 
     @Column(nullable = false)
     private boolean valide;
+
+    // ===== Associations =====
+
+    @OneToOne
+    @JoinColumn(name = "id_reservation", nullable = false, unique = true)
+    private Reservation reservation;
+
+    @OneToMany(mappedBy = "contrat", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Paiement> paiements = new ArrayList<>();
 }

@@ -1,5 +1,6 @@
 package tn.esprit.autoloc.domain;
-
+import java.util.HashSet;
+import java.util.Set;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,4 +21,7 @@ public class Equipement {
 
     @Column(nullable = false, unique = true, length = 100)
     private String libelle;
+
+    @ManyToMany(mappedBy = "equipements")
+    private Set<Vehicule> vehicules = new HashSet<>();
 }
