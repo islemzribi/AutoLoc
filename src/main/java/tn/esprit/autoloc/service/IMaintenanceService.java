@@ -6,17 +6,13 @@ import tn.esprit.autoloc.domain.Maintenance;
 
 public interface IMaintenanceService {
 
-    Maintenance add(Maintenance maintenance);
+    Maintenance create(Maintenance maintenance);
 
-    Maintenance update(Maintenance maintenance);
+    Maintenance findById(Long id);
 
-    Maintenance getById(Long id);
+    List<Maintenance> findAll();
 
-    List<Maintenance> getAll();
-
-    void delete(Maintenance maintenance);
+    Maintenance update(Long id, Maintenance maintenance);
 
     void deleteById(Long id);
-
-    boolean existsById(Long id);
 }

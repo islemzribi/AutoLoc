@@ -3,6 +3,8 @@ package tn.esprit.autoloc.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,9 +43,11 @@ public class Agence {
 
     // ===== Associations =====
 
+    @JsonIgnore
     @OneToMany(mappedBy = "agence")
     private List<Employe> employes = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "agence")
     private List<Vehicule> vehicules = new ArrayList<>();
 }

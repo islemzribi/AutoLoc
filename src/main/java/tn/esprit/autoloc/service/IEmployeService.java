@@ -6,17 +6,13 @@ import tn.esprit.autoloc.domain.Employe;
 
 public interface IEmployeService {
 
-    Employe add(Employe employe);
+    Employe create(Employe employe);
 
-    Employe update(Employe employe);
+    Employe findById(Long id);
 
-    Employe getById(Long id);
+    List<Employe> findAll();
 
-    List<Employe> getAll();
-
-    void delete(Employe employe);
+    Employe update(Long id, Employe employe);
 
     void deleteById(Long id);
-
-    boolean existsById(Long id);
 }

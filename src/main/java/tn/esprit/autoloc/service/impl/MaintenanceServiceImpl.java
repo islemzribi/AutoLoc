@@ -7,62 +7,67 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import tn.esprit.autoloc.domain.Maintenance;
+import tn.esprit.autoloc.exception.ResourceNotFoundException;
 import tn.esprit.autoloc.repository.IMaintenanceRepository;
 import tn.esprit.autoloc.service.IMaintenanceService;
-import tn.esprit.autoloc.service.exception.ResourceNotFoundException;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class MaintenanceServiceImpl implements IMaintenanceService {
 
-    private static final String NOT_FOUND = "Maintenance introuvable : ";
-
     private final IMaintenanceRepository maintenanceRepository;
 
     @Override
-    public Maintenance add(Maintenance maintenance) {
-        return maintenanceRepository.save(maintenance);
-    }
-
-    @Override
-    public Maintenance update(Maintenance maintenance) {
-        if (maintenance.getIdMaintenance() == null
-                || !maintenanceRepository.existsById(maintenance.getIdMaintenance())) {
-            throw new ResourceNotFoundException(NOT_FOUND + maintenance.getIdMaintenance());
+    public Maintenance create(Maintenance maintenance) {
+        if (maintenance.getIdMaintenance() != null) {
+            throw new IllegalArgumentException("Un nouveau Maintenance ne doit pas avoir d'identifiant");
         }
+        valider(maintenance);
         return maintenanceRepository.save(maintenance);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Maintenance getById(Long id) {
+    public Maintenance findById(Long id) {
         return maintenanceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Maintenance", id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Maintenance> getAll() {
+    public List<Maintenance> findAll() {
         return maintenanceRepository.findAll();
     }
 
     @Override
-    public void delete(Maintenance maintenance) {
-        maintenanceRepository.delete(maintenance);
+    public Maintenance update(Long id, Maintenance maintenance) {
+        Maintenance existant = findById(id);
+        valider(maintenance);
+        existant.setDateDebut(maintenance.getDateDebut());
+        existant.setDateFin(maintenance.getDateFin());
+        existant.setDescription(maintenance.getDescription());
+        existant.setVehicule(maintenance.getVehicule());
+        return maintenanceRepository.save(existant);
     }
 
     @Override
     public void deleteById(Long id) {
         if (!maintenanceRepository.existsById(id)) {
-            throw new ResourceNotFoundException(NOT_FOUND + id);
+            throw new ResourceNotFoundException("Maintenance", id);
         }
         maintenanceRepository.deleteById(id);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsById(Long id) {
-        return maintenanceRepository.existsById(id);
+    private void valider(Maintenance maintenance) {
+        if (maintenance.getDateDebut() == null) {
+            throw new IllegalArgumentException("La date de debut de la maintenance est obligatoire");
+        }
+        if (maintenance.getDateFin() != null && maintenance.getDateFin().isBefore(maintenance.getDateDebut())) {
+            throw new IllegalArgumentException("La date de fin ne peut pas etre anterieure a la date de debut");
+        }
+        if (maintenance.getVehicule() == null) {
+            throw new IllegalArgumentException("Le vehicule de la maintenance est obligatoire");
+        }
     }
 }

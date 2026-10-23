@@ -6,17 +6,13 @@ import tn.esprit.autoloc.domain.Agence;
 
 public interface IAgenceService {
 
-    Agence add(Agence agence);
+    Agence create(Agence agence);
 
-    Agence update(Agence agence);
+    Agence findById(Long id);
 
-    Agence getById(Long id);
+    List<Agence> findAll();
 
-    List<Agence> getAll();
-
-    void delete(Agence agence);
+    Agence update(Long id, Agence agence);
 
     void deleteById(Long id);
-
-    boolean existsById(Long id);
 }
