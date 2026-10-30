@@ -3,7 +3,6 @@ package tn.esprit.autoloc.web.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,12 +10,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import tn.esprit.autoloc.domain.Contrat;
+import tn.esprit.autoloc.dto.ContratRequestDTO;
+import tn.esprit.autoloc.dto.ContratResponseDTO;
 import tn.esprit.autoloc.service.IContratService;
 
+/**
+ * Endpoints REST de gestion des contrats (uniquement des DTO en entrée/sortie).
+ */
 @RestController
 @RequestMapping("/contrats")
 @RequiredArgsConstructor
@@ -24,29 +29,30 @@ public class ContratController {
 
     private final IContratService contratService;
 
-    @PostMapping
-    public ResponseEntity<Contrat> create(@RequestBody Contrat contrat) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(contratService.create(contrat));
+    @GetMapping
+    public List<ContratResponseDTO> findAll() {
+        return contratService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Contrat> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(contratService.findById(id));
+    public ContratResponseDTO findById(@PathVariable Long id) {
+        return contratService.findById(id);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Contrat>> findAll() {
-        return ResponseEntity.ok(contratService.findAll());
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ContratResponseDTO create(@Valid @RequestBody ContratRequestDTO dto) {
+        return contratService.create(dto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Contrat> update(@PathVariable Long id, @RequestBody Contrat contrat) {
-        return ResponseEntity.ok(contratService.update(id, contrat));
+    public ContratResponseDTO update(@PathVariable Long id, @Valid @RequestBody ContratRequestDTO dto) {
+        return contratService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable Long id) {
         contratService.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }

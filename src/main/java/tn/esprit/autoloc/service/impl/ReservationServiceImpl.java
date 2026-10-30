@@ -6,9 +6,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import tn.esprit.autoloc.domain.Client;
 import tn.esprit.autoloc.domain.Reservation;
+import tn.esprit.autoloc.domain.Vehicule;
+import tn.esprit.autoloc.dto.ReservationRequestDTO;
+import tn.esprit.autoloc.dto.ReservationResponseDTO;
 import tn.esprit.autoloc.exception.ResourceNotFoundException;
+import tn.esprit.autoloc.mapper.ReservationMapper;
+import tn.esprit.autoloc.repository.IClientRepository;
 import tn.esprit.autoloc.repository.IReservationRepository;
+import tn.esprit.autoloc.repository.IVehiculeRepository;
 import tn.esprit.autoloc.service.IReservationService;
 
 @Service
@@ -17,39 +24,39 @@ import tn.esprit.autoloc.service.IReservationService;
 public class ReservationServiceImpl implements IReservationService {
 
     private final IReservationRepository reservationRepository;
+    private final IVehiculeRepository vehiculeRepository;
+    private final IClientRepository clientRepository;
+    private final ReservationMapper reservationMapper;
 
     @Override
-    public Reservation create(Reservation reservation) {
-        if (reservation.getIdReservation() != null) {
-            throw new IllegalArgumentException("Un nouveau Reservation ne doit pas avoir d'identifiant");
-        }
-        valider(reservation);
-        return reservationRepository.save(reservation);
+    public ReservationResponseDTO create(ReservationRequestDTO dto) {
+        validerDates(dto);
+        Reservation reservation = reservationMapper.toEntity(dto);
+        appliquerRelations(reservation, dto);
+        return reservationMapper.toDTO(reservationRepository.save(reservation));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Reservation findById(Long id) {
-        return reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
+    public ReservationResponseDTO findById(Long id) {
+        return reservationMapper.toDTO(findEntity(id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Reservation> findAll() {
-        return reservationRepository.findAll();
+    public List<ReservationResponseDTO> findAll() {
+        return reservationRepository.findAll().stream()
+                .map(reservationMapper::toDTO)
+                .toList();
     }
 
     @Override
-    public Reservation update(Long id, Reservation reservation) {
-        Reservation existant = findById(id);
-        valider(reservation);
-        existant.setDateDebut(reservation.getDateDebut());
-        existant.setDateFin(reservation.getDateFin());
-        existant.setStatut(reservation.getStatut());
-        existant.setVehicule(reservation.getVehicule());
-        existant.setClient(reservation.getClient());
-        return reservationRepository.save(existant);
+    public ReservationResponseDTO update(Long id, ReservationRequestDTO dto) {
+        validerDates(dto);
+        Reservation reservation = findEntity(id);
+        reservationMapper.updateEntity(reservation, dto);
+        appliquerRelations(reservation, dto);
+        return reservationMapper.toDTO(reservationRepository.save(reservation));
     }
 
     @Override
@@ -60,24 +67,24 @@ public class ReservationServiceImpl implements IReservationService {
         reservationRepository.deleteById(id);
     }
 
-    private void valider(Reservation reservation) {
-        if (reservation.getDateDebut() == null) {
-            throw new IllegalArgumentException("La date de debut de la reservation est obligatoire");
+    private void appliquerRelations(Reservation reservation, ReservationRequestDTO dto) {
+        Vehicule vehicule = vehiculeRepository.findById(dto.getVehiculeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicule", dto.getVehiculeId()));
+        Client client = clientRepository.findById(dto.getClientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Client", dto.getClientId()));
+        reservation.setVehicule(vehicule);
+        reservation.setClient(client);
+    }
+
+    private void validerDates(ReservationRequestDTO dto) {
+        if (dto.getDateDebut() != null && dto.getDateFin() != null
+                && dto.getDateFin().isBefore(dto.getDateDebut())) {
+            throw new IllegalArgumentException("La date de fin ne peut pas être antérieure à la date de début");
         }
-        if (reservation.getDateFin() == null) {
-            throw new IllegalArgumentException("La date de fin de la reservation est obligatoire");
-        }
-        if (reservation.getDateFin().isBefore(reservation.getDateDebut())) {
-            throw new IllegalArgumentException("La date de fin ne peut pas etre anterieure a la date de debut");
-        }
-        if (reservation.getStatut() == null) {
-            throw new IllegalArgumentException("Le statut de la reservation est obligatoire");
-        }
-        if (reservation.getVehicule() == null) {
-            throw new IllegalArgumentException("Le vehicule de la reservation est obligatoire");
-        }
-        if (reservation.getClient() == null) {
-            throw new IllegalArgumentException("Le client de la reservation est obligatoire");
-        }
+    }
+
+    private Reservation findEntity(Long id) {
+        return reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
     }
 }

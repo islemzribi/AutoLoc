@@ -2,17 +2,18 @@ package tn.esprit.autoloc.service;
 
 import java.util.List;
 
-import tn.esprit.autoloc.domain.Vehicule;
+import tn.esprit.autoloc.dto.VehiculeRequestDTO;
+import tn.esprit.autoloc.dto.VehiculeResponseDTO;
 
 public interface IVehiculeService {
 
-    Vehicule create(Vehicule vehicule);
+    VehiculeResponseDTO create(VehiculeRequestDTO dto);
 
-    Vehicule findById(Long id);
+    VehiculeResponseDTO findById(Long id);
 
-    List<Vehicule> findAll();
+    List<VehiculeResponseDTO> findAll();
 
-    Vehicule update(Long id, Vehicule vehicule);
+    VehiculeResponseDTO update(Long id, VehiculeRequestDTO dto);
 
     void deleteById(Long id);
 }

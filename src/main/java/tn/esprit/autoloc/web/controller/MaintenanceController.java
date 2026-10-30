@@ -3,7 +3,6 @@ package tn.esprit.autoloc.web.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,12 +10,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import tn.esprit.autoloc.domain.Maintenance;
+import tn.esprit.autoloc.dto.MaintenanceRequestDTO;
+import tn.esprit.autoloc.dto.MaintenanceResponseDTO;
 import tn.esprit.autoloc.service.IMaintenanceService;
 
+/**
+ * Endpoints REST de gestion des maintenances (uniquement des DTO en entrée/sortie).
+ */
 @RestController
 @RequestMapping("/maintenances")
 @RequiredArgsConstructor
@@ -24,29 +29,30 @@ public class MaintenanceController {
 
     private final IMaintenanceService maintenanceService;
 
-    @PostMapping
-    public ResponseEntity<Maintenance> create(@RequestBody Maintenance maintenance) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(maintenanceService.create(maintenance));
+    @GetMapping
+    public List<MaintenanceResponseDTO> findAll() {
+        return maintenanceService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Maintenance> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(maintenanceService.findById(id));
+    public MaintenanceResponseDTO findById(@PathVariable Long id) {
+        return maintenanceService.findById(id);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Maintenance>> findAll() {
-        return ResponseEntity.ok(maintenanceService.findAll());
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public MaintenanceResponseDTO create(@Valid @RequestBody MaintenanceRequestDTO dto) {
+        return maintenanceService.create(dto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Maintenance> update(@PathVariable Long id, @RequestBody Maintenance maintenance) {
-        return ResponseEntity.ok(maintenanceService.update(id, maintenance));
+    public MaintenanceResponseDTO update(@PathVariable Long id, @Valid @RequestBody MaintenanceRequestDTO dto) {
+        return maintenanceService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable Long id) {
         maintenanceService.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }
