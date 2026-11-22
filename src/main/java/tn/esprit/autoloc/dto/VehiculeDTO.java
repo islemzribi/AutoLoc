@@ -19,7 +19,7 @@ import tn.esprit.autoloc.domain.StatutVehicule;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class VehiculeResponseDTO {
+public class VehiculeDTO {
 
     private Long idVehicule;
     private String immatriculation;

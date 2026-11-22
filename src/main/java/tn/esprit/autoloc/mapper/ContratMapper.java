@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import tn.esprit.autoloc.domain.Contrat;
 import tn.esprit.autoloc.dto.ContratRequestDTO;
-import tn.esprit.autoloc.dto.ContratResponseDTO;
+import tn.esprit.autoloc.dto.ContratDTO;
 
 /**
  * Conversion entre l'entité Contrat et ses DTO.
@@ -28,14 +28,14 @@ public class ContratMapper {
         contrat.setValide(dto.isValide());
     }
 
-    public ContratResponseDTO toDTO(Contrat contrat) {
+    public ContratDTO toDTO(Contrat contrat) {
         List<Long> paiementIds = contrat.getPaiements() == null
                 ? new ArrayList<>()
                 : contrat.getPaiements().stream()
                         .map(paiement -> paiement.getIdPaiement())
                         .toList();
 
-        return ContratResponseDTO.builder()
+        return ContratDTO.builder()
                 .idContrat(contrat.getIdContrat())
                 .dateSignature(contrat.getDateSignature())
                 .montantTotal(contrat.getMontantTotal())

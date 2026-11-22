@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import tn.esprit.autoloc.domain.Vehicule;
 import tn.esprit.autoloc.dto.VehiculeRequestDTO;
-import tn.esprit.autoloc.dto.VehiculeResponseDTO;
+import tn.esprit.autoloc.dto.VehiculeDTO;
 
 /**
  * Conversion entre l'entité Vehicule et ses DTO.
@@ -32,14 +32,14 @@ public class VehiculeMapper {
         vehicule.setStatut(dto.getStatut());
     }
 
-    public VehiculeResponseDTO toDTO(Vehicule vehicule) {
+    public VehiculeDTO toDTO(Vehicule vehicule) {
         Set<Long> equipementIds = vehicule.getEquipements() == null
                 ? new HashSet<>()
                 : vehicule.getEquipements().stream()
                         .map(equipement -> equipement.getIdEquipement())
                         .collect(Collectors.toSet());
 
-        return VehiculeResponseDTO.builder()
+        return VehiculeDTO.builder()
                 .idVehicule(vehicule.getIdVehicule())
                 .immatriculation(vehicule.getImmatriculation())
                 .marque(vehicule.getMarque())

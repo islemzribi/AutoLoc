@@ -18,7 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ContratResponseDTO {
+public class ContratDTO {
 
     private Long idContrat;
     private LocalDate dateSignature;
