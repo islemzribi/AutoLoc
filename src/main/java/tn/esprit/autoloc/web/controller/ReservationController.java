@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import tn.esprit.autoloc.dto.ReservationRequestDTO;
 import tn.esprit.autoloc.dto.ReservationResponseDTO;
+import tn.esprit.autoloc.dto.ReservationWithContratRequestDTO;
 import tn.esprit.autoloc.service.IReservationService;
 
 /**
@@ -54,5 +56,17 @@ public class ReservationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable Long id) {
         reservationService.deleteById(id);
+    }
+
+    @PutMapping("/{id}/client")
+    public ReservationResponseDTO affecterReservationAClient(@PathVariable Long id,
+            @RequestParam String nom, @RequestParam String prenom) {
+        return reservationService.affecterReservationAClient(id, nom, prenom);
+    }
+
+    @PostMapping("/avec-contrat")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ReservationResponseDTO creerReservationEtContratAssocie(@Valid @RequestBody ReservationWithContratRequestDTO dto) {
+        return reservationService.creerReservationEtContratAssocie(dto);
     }
 }
