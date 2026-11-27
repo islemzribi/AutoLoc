@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import tn.esprit.autoloc.domain.Contrat;
+import tn.esprit.autoloc.dto.ContratDTO;
 import tn.esprit.autoloc.dto.ContratRequestDTO;
 import tn.esprit.autoloc.dto.ContratResponseDTO;
 
@@ -36,6 +37,26 @@ public class ContratMapper {
                         .toList();
 
         return ContratResponseDTO.builder()
+                .idContrat(contrat.getIdContrat())
+                .dateSignature(contrat.getDateSignature())
+                .montantTotal(contrat.getMontantTotal())
+                .valide(contrat.isValide())
+                .reservationId(contrat.getReservation() != null ? contrat.getReservation().getIdReservation() : null)
+                .paiementIds(paiementIds)
+                .build();
+    }
+
+    /**
+     * Variante utilisée par les services d'affectation retournant un ContratDTO.
+     */
+    public ContratDTO toContratDTO(Contrat contrat) {
+        List<Long> paiementIds = contrat.getPaiements() == null
+                ? new ArrayList<>()
+                : contrat.getPaiements().stream()
+                        .map(paiement -> paiement.getIdPaiement())
+                        .toList();
+
+        return ContratDTO.builder()
                 .idContrat(contrat.getIdContrat())
                 .dateSignature(contrat.getDateSignature())
                 .montantTotal(contrat.getMontantTotal())

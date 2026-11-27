@@ -1,5 +1,8 @@
 package tn.esprit.autoloc.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -8,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import tn.esprit.autoloc.domain.Contrat;
 import tn.esprit.autoloc.domain.Reservation;
+import tn.esprit.autoloc.dto.ContratDTO;
 import tn.esprit.autoloc.dto.ContratRequestDTO;
 import tn.esprit.autoloc.dto.ContratResponseDTO;
 import tn.esprit.autoloc.exception.ResourceNotFoundException;
@@ -61,6 +65,57 @@ public class ContratServiceImpl implements IContratService {
             contrat.getReservation().setContrat(null);
         }
         contratRepository.delete(contrat);
+    }
+
+    /**
+     * Associe un contrat à la réservation la plus récente encore sans contrat.
+     * Les dates de signature, de début et de fin sont validées avant association.
+     */
+    @Override
+    public ContratDTO affecterContratAReservation(LocalDate dateSignature, LocalDate dateDebut, LocalDate dateFin) {
+        validerDates(dateSignature, dateDebut, dateFin);
+        Reservation reservation = trouverReservationSansContrat();
+        if (reservation.getContrat() != null) {
+            throw new IllegalArgumentException("La réservation " + reservation.getIdReservation()
+                    + " est déjà liée à un contrat");
+        }
+        ContratRequestDTO dto = new ContratRequestDTO(
+                dateSignature, BigDecimal.ZERO, false, reservation.getIdReservation());
+        Contrat contrat = contratMapper.toEntity(dto);
+        contrat.setReservation(reservation);
+        return contratMapper.toContratDTO(contratRepository.save(contrat));
+    }
+
+    private Reservation trouverReservationSansContrat() {
+        List<Reservation> reservations = reservationRepository.findAllByContratIsNull();
+        if (reservations == null || reservations.isEmpty()) {
+            throw new ResourceNotFoundException("Aucune réservation sans contrat");
+        }
+        return reservations.stream()
+                .max(Comparator.comparing(Reservation::getDateDebut,
+                                Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Reservation::getIdReservation,
+                                Comparator.nullsLast(Comparator.naturalOrder())))
+                .orElseThrow(() -> new ResourceNotFoundException("Aucune réservation sans contrat"));
+    }
+
+    private void validerDates(LocalDate dateSignature, LocalDate dateDebut, LocalDate dateFin) {
+        if (dateSignature == null) {
+            throw new IllegalArgumentException("La date de signature est obligatoire");
+        }
+        if (dateDebut == null) {
+            throw new IllegalArgumentException("La date de début de location est obligatoire");
+        }
+        if (dateFin == null) {
+            throw new IllegalArgumentException("La date de fin de location est obligatoire");
+        }
+        if (dateFin.isBefore(dateDebut)) {
+            throw new IllegalArgumentException("La date de fin ne peut pas être antérieure à la date de début");
+        }
+        if (dateSignature.isBefore(dateDebut) || dateSignature.isAfter(dateFin)) {
+            throw new IllegalArgumentException(
+                    "La date de signature doit être comprise entre la date de début et la date de fin");
+        }
     }
 
     private void appliquerReservation(Contrat contrat, Long reservationId) {

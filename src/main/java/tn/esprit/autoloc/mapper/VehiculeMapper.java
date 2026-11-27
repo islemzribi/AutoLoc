@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import tn.esprit.autoloc.domain.Vehicule;
+import tn.esprit.autoloc.dto.VehiculeDTO;
 import tn.esprit.autoloc.dto.VehiculeRequestDTO;
 import tn.esprit.autoloc.dto.VehiculeResponseDTO;
 
@@ -40,6 +41,29 @@ public class VehiculeMapper {
                         .collect(Collectors.toSet());
 
         return VehiculeResponseDTO.builder()
+                .idVehicule(vehicule.getIdVehicule())
+                .immatriculation(vehicule.getImmatriculation())
+                .marque(vehicule.getMarque())
+                .modele(vehicule.getModele())
+                .categorie(vehicule.getCategorie())
+                .tarifJournalier(vehicule.getTarifJournalier())
+                .statut(vehicule.getStatut())
+                .agenceId(vehicule.getAgence() != null ? vehicule.getAgence().getIdAgence() : null)
+                .equipementIds(equipementIds)
+                .build();
+    }
+
+    /**
+     * Variante utilisée par les services d'affectation retournant un VehiculeDTO.
+     */
+    public VehiculeDTO toVehiculeDTO(Vehicule vehicule) {
+        Set<Long> equipementIds = vehicule.getEquipements() == null
+                ? new HashSet<>()
+                : vehicule.getEquipements().stream()
+                        .map(equipement -> equipement.getIdEquipement())
+                        .collect(Collectors.toSet());
+
+        return VehiculeDTO.builder()
                 .idVehicule(vehicule.getIdVehicule())
                 .immatriculation(vehicule.getImmatriculation())
                 .marque(vehicule.getMarque())
